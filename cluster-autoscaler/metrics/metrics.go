@@ -217,6 +217,14 @@ var (
 		},
 	)
 
+	nodeUtilization = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_utilization",
+			Help:      "Resource utilization ratio of a node",
+		}, []string{"node"},
+	)
+
 	scaleDownInCooldown = k8smetrics.NewGauge(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
@@ -252,7 +260,7 @@ var (
 )
 
 // RegisterAll registers all metrics.
-func RegisterAll() {
+func RegisterAll(enableNodeUtilization bool) {
 	legacyregistry.MustRegister(clusterSafeToAutoscale)
 	legacyregistry.MustRegister(nodesCount)
 	legacyregistry.MustRegister(nodeGroupsCount)
@@ -272,6 +280,10 @@ func RegisterAll() {
 	legacyregistry.MustRegister(napEnabled)
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
+
+	if enableNodeUtilization {
+		legacyregistry.MustRegister(nodeUtilization)
+	}
 }
 
 // UpdateDurationFromStart records the duration of the step identified by the
@@ -361,6 +373,11 @@ func RegisterEvictions(podsCount int) {
 // UpdateUnneededNodesCount records number of currently unneeded nodes
 func UpdateUnneededNodesCount(nodesCount int) {
 	unneededNodesCount.Set(float64(nodesCount))
+}
+
+// UpdateNodeUtilization records the resource utilization ratio of a node
+func UpdateNodeUtilization(nodeName string, utilization float64) {
+	nodeUtilization.WithLabelValues(nodeName).Set(utilization)
 }
 
 // UpdateNapEnabled records if NodeAutoprovisioning is enabled

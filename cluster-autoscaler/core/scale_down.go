@@ -607,6 +607,10 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.nodeUtilizationMap = utilizationMap
 	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
+	for nodeName, utilizationInfo := range sd.nodeUtilizationMap {
+		metrics.UpdateNodeUtilization(nodeName, utilizationInfo.Utilization)
+	}
+
 	return nil
 }
 

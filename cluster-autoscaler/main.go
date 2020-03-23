@@ -144,6 +144,7 @@ var (
 			"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
 			"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
 			"Can be used multiple times.")
+	nodeUtilizationMetric = flag.Bool("node-utilization-metric", false, "Enable the per-node utilization metric gauge")
 
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(estimator.AvailableEstimators, ",")+"]")
@@ -319,7 +320,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 }
 
 func run(healthCheck *metrics.HealthCheck) {
-	metrics.RegisterAll()
+	metrics.RegisterAll(*nodeUtilizationMetric)
 
 	autoscaler, err := buildAutoscaler()
 	if err != nil {
